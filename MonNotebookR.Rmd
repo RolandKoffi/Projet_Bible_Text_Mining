@@ -1,0 +1,147 @@
+---
+title: "Projet Bible Text Mining"
+author: "Roland Koffi"
+date: '2023-02-13'
+output: html_document
+---
+
+### Chargement de librairies
+
+```{r}
+library(readr)
+library(stringr)
+library(magrittr)
+library(tm)
+library(broom)
+library(tidyr)
+library(tidytext)
+library(dplyr)
+library(wordcloud)
+library(condformat)
+library(topicmodels)
+library(ggplot2)
+```
+
+
+# Cette analyse a été faite sur la bible toute entière
+
+### Chargement de fichier 
+
+```{r}
+bible <- read.csv("fichiers_bibles/bible_louis_segond.csv")
+
+head(bible, 4)
+```
+
+
+### Tokenization
+
+```{r}
+token_bible <- bible %>% unnest_tokens(word, textes)
+
+token_bible <- token_bible %>% anti_join(tibble(word = tm::stopwords("fr")))
+
+token_bible
+```
+
+### Mots se repetant le plus 
+
+```{r}
+token_bible %>% count(word, sort = TRUE)
+```
+
+### word cloud
+
+```{r}
+token_bible %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, scale = c(9,.7), color = brewer.pal(8, "Dark2")))
+```
+
+### Creation d'un stopwords personnel
+
+```{r}
+file = read_file("fichiers_bibles/my_stopwords.txt")
+my_stopwords = c()
+
+for (i in 1:length(file)){
+  val <- read_lines(file[i])
+  my_stopwords <- c(my_stopwords, val)
+}
+
+my_stopwords
+```
+
+### Nouvelle tokenization
+
+```{r}
+new_token_bible <- bible %>% unnest_tokens(word, textes)
+
+new_token_bible <- new_token_bible %>% anti_join(tibble(word = c(my_stopwords, tm::stopwords("fr"), "dit") ))
+
+new_token_bible
+```
+
+### Mots se repetant le plus 
+
+```{r}
+new_token_bible %>% count(word, sort = TRUE)
+```
+
+### Nouveau word cloud
+
+```{r}
+new_token_bible %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, scale = c(9,.7), color = brewer.pal(8, "Dark2")))
+```
+
+
+# Essayons cette fois sur le nouveau Testament
+
+### Chargement de fichier 
+
+```{r}
+nouveau_testament <- read.csv("fichiers_bibles/nouveau_testament_louis_segond.csv")
+
+head(nouveau_testament, 4)
+```
+
+
+### Tokenization
+
+```{r}
+token_nouv_test <- nouveau_testament %>% unnest_tokens(word, textes)
+
+token_nouv_test <- token_nouv_test %>% anti_join(tibble(word = c(my_stopwords, tm::stopwords("fr"), "dit", "celui") ))
+
+token_nouv_test
+```
+
+
+### Mots se repetant le plus 
+
+```{r}
+token_nouv_test %>% count(word, sort = TRUE)
+```
+
+### word cloud
+
+```{r}
+token_nouv_test %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, scale = c(9,.7), color = brewer.pal(8, "Dark2")))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
